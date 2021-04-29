@@ -31,6 +31,53 @@ struct image generate_rand_img()
 
   return img;
 }
+
+struct image generate_rand_size_black_img()
+{
+  struct image img;
+  do
+  {
+    img.size_x = rand() % 512;
+  } while (img.size_x == 0);
+  do
+  {
+    img.size_y = rand() % 512;
+  } while (img.size_y == 0);
+  img.px = malloc(img.size_x * img.size_y * sizeof(struct pixel));
+  if (img.px == NULL)
+    assert(0 && "Rerun test, malloc failed");
+  for (long i = 0; i < img.size_y * img.size_x; i++)
+  {
+    img.px[i].red = 0;
+    img.px[i].green = 0;
+    img.px[i].blue = 0;
+    img.px[i].alpha = 128;
+  }
+
+  return img;
+}
+
+struct image generate_zero_size_img()
+{
+  struct image img;
+
+  img.size_x = 0;
+  img.size_y = 0;
+
+  img.px = malloc(img.size_x * img.size_y * sizeof(struct pixel));
+  if (img.px == NULL)
+    assert(0 && "Rerun test, malloc failed");
+  for (long i = 0; i < img.size_y * img.size_x; i++)
+  {
+    img.px[i].red = 0;
+    img.px[i].green = 0;
+    img.px[i].blue = 0;
+    img.px[i].alpha = 128;
+  }
+
+  return img;
+}
+
 struct image duplicate_img(struct image img)
 {
   struct image img_dup;
@@ -518,6 +565,32 @@ END_TEST
 START_TEST(negative_functionality)
 {
   /* TODO: Implement */
+  srand(time(NULL) ^ getpid());
+
+  /* Generate random size black image */
+  struct image img = generate_rand_size_black_img();
+
+  filter_negative(&img, NULL);
+
+  for (int i = 0; i < img.size_y * img.size_x; i++)
+  {
+    ck_assert_uint_eq(img.px[i].red, 255);
+    ck_assert_uint_eq(img.px[i].green, 255);
+    ck_assert_uint_eq(img.px[i].blue, 255);
+    ck_assert_uint_eq(img.px[i].alpha, 128);
+  }
+
+  filter_negative(&img, NULL);
+
+  for (int i = 0; i < img.size_y * img.size_x; i++)
+  {
+    ck_assert_uint_eq(img.px[i].red, 0);
+    ck_assert_uint_eq(img.px[i].green, 0);
+    ck_assert_uint_eq(img.px[i].blue, 0);
+    ck_assert_uint_eq(img.px[i].alpha, 128);
+  }
+  /* Not strictly necessary unless using CK_FORK=no */
+  free(img.px);
 }
 END_TEST
 
@@ -525,6 +598,15 @@ END_TEST
 START_TEST(negative_zero_size)
 {
   /* TODO: Implement */
+  srand(time(NULL) ^ getpid());
+
+  /* Generate random size black image */
+  struct image img = generate_zero_size_img();
+
+  filter_negative(&img, NULL);
+
+  /* Not strictly necessary unless using CK_FORK=no */
+  free(img.px);
 }
 END_TEST
 
@@ -538,6 +620,81 @@ START_TEST(blur_functionality)
   struct image img = {3, 3, &px};
 
   /* TODO: Implement */
+  struct image img1 = duplicate_img(img);
+  struct image img2 = duplicate_img(img1);
+  struct image img3 = duplicate_img(img2);
+  struct image img4 = duplicate_img(img3);
+  int r0 = 0, r1 = 1, r2 = 2, r3 = 3;
+
+  filter_blur(&img1, &r0);
+  filter_blur(&img2, &r1);
+  filter_blur(&img3, &r2);
+  filter_blur(&img4, &r3);
+
+  for (int i = 0; i < img1.size_x * img1.size_y; ++i)
+  {
+    ck_assert_uint_eq(img1.px[i].red, img.px[i].red);
+    ck_assert_uint_eq(img1.px[i].green, img.px[i].green);
+    ck_assert_uint_eq(img1.px[i].blue, img.px[i].blue);
+    ck_assert_uint_eq(img1.px[i].alpha, img.px[i].alpha);
+  }
+  {
+    ck_assert_uint_eq(img2.px[0].red, 63);
+    ck_assert_uint_eq(img2.px[0].green, 63);
+    ck_assert_uint_eq(img2.px[0].blue, 63);
+    ck_assert_uint_eq(img2.px[0].alpha, 255);
+    ck_assert_uint_eq(img2.px[1].red, 42);
+    ck_assert_uint_eq(img2.px[1].green, 42);
+    ck_assert_uint_eq(img2.px[1].blue, 42);
+    ck_assert_uint_eq(img2.px[1].alpha, 255);
+    ck_assert_uint_eq(img2.px[2].red, 63);
+    ck_assert_uint_eq(img2.px[2].green, 63);
+    ck_assert_uint_eq(img2.px[2].blue, 63);
+    ck_assert_uint_eq(img2.px[2].alpha, 255);
+    ck_assert_uint_eq(img2.px[3].red, 42);
+    ck_assert_uint_eq(img2.px[3].green, 42);
+    ck_assert_uint_eq(img2.px[3].blue, 42);
+    ck_assert_uint_eq(img2.px[3].alpha, 255);
+    ck_assert_uint_eq(img2.px[4].red, 28);
+    ck_assert_uint_eq(img2.px[4].green, 28);
+    ck_assert_uint_eq(img2.px[4].blue, 28);
+    ck_assert_uint_eq(img2.px[4].alpha, 255);
+    ck_assert_uint_eq(img2.px[5].red, 42);
+    ck_assert_uint_eq(img2.px[5].green, 42);
+    ck_assert_uint_eq(img2.px[5].blue, 42);
+    ck_assert_uint_eq(img2.px[5].alpha, 255);
+    ck_assert_uint_eq(img2.px[6].red, 63);
+    ck_assert_uint_eq(img2.px[6].green, 63);
+    ck_assert_uint_eq(img2.px[6].blue, 63);
+    ck_assert_uint_eq(img2.px[6].alpha, 255);
+    ck_assert_uint_eq(img2.px[7].red, 42);
+    ck_assert_uint_eq(img2.px[7].green, 42);
+    ck_assert_uint_eq(img2.px[7].blue, 42);
+    ck_assert_uint_eq(img2.px[7].alpha, 255);
+    ck_assert_uint_eq(img2.px[8].red, 63);
+    ck_assert_uint_eq(img2.px[8].green, 63);
+    ck_assert_uint_eq(img2.px[8].blue, 63);
+    ck_assert_uint_eq(img2.px[8].alpha, 255);
+  }
+  for (int i = 0; i < img3.size_x * img3.size_y; ++i)
+  {
+    ck_assert_uint_eq(img3.px[i].red, 28);
+    ck_assert_uint_eq(img3.px[i].green, 28);
+    ck_assert_uint_eq(img3.px[i].blue, 28);
+    ck_assert_uint_eq(img3.px[i].alpha, 255);
+  }
+  for (int i = 0; i < img4.size_x * img4.size_y; ++i)
+  {
+    ck_assert_uint_eq(img4.px[i].red, 28);
+    ck_assert_uint_eq(img4.px[i].green, 28);
+    ck_assert_uint_eq(img4.px[i].blue, 28);
+    ck_assert_uint_eq(img4.px[i].alpha, 255);
+  }
+
+  free(img1.px);
+  free(img2.px);
+  free(img3.px);
+  free(img4.px);
 }
 END_TEST
 
@@ -547,6 +704,36 @@ END_TEST
 START_TEST(blur_radius_edge_cases)
 {
   /* TODO: Implement */
+  struct image img = generate_rand_img();
+  int radii[5] = {INT_MIN, INT_MAX, 0, img.size_x, img.size_y};
+
+  for (int i = 0; i < 5; ++i)
+  {
+    struct image dup_img = duplicate_img(img);
+    filter_blur(&dup_img, &radii[i]);
+    free(dup_img.px);
+  }
+  for (int i = 0; i < 5; ++i)
+  {
+    struct image dup_img = duplicate_img(img);
+    int new_radii = radii[i] / 2;
+    filter_blur(&dup_img, &new_radii);
+    free(dup_img.px);
+  }
+  for (int i = 0; i < 5; ++i)
+  {
+    struct image dup_img = duplicate_img(img);
+    int new_radii = radii[i] + 1;
+    filter_blur(&dup_img, &new_radii);
+    free(dup_img.px);
+  }
+  for (int i = 0; i < 5; ++i)
+  {
+    struct image dup_img = duplicate_img(img);
+    int new_radii = radii[i] - 1;
+    filter_blur(&dup_img, &new_radii);
+    free(dup_img.px);
+  }
 }
 END_TEST
 
