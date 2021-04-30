@@ -556,6 +556,49 @@ START_TEST(grayscale_examples)
 {
   double weights[] = {0.2125, 0.7154, 0.0721};
   /* TODO: Implement */
+
+  struct image *img;
+  struct image *output_img;
+  ck_assert_int_eq(load_png(grayscale_sources[_i], &img), 0);
+  ck_assert_int_eq(load_png(grayscale_output[_i], &output_img), 0);
+
+  filter_grayscale(img, weights);
+  for (long i = 0; i < img->size_x * img->size_y; ++i)
+  {
+    ck_assert_uint_eq(img->px[i].red, output_img->px[i].red);
+    ck_assert_uint_eq(img->px[i].green, output_img->px[i].green);
+    ck_assert_uint_eq(img->px[i].blue, output_img->px[i].blue);
+    ck_assert_uint_eq(img->px[i].alpha, output_img->px[i].alpha);
+  }
+  free(output_img->px);
+  free(output_img);
+  free(img->px);
+  free(img);
+  // {
+  //   struct image *img, *img_edge, img_dup;
+
+  //   ck_assert_int_eq(load_png("test_imgs/desert.png", &img), 0);
+  //   img_dup = duplicate_img(*img);
+  //   filter_edge_detect(img, &edge_thresholds[_i]);
+
+  //   /* Compare to known good image */
+  //   ck_assert_int_eq(load_png(edge_deserts[_i], &img_edge), 0);
+
+  //   ck_assert_uint_eq(img_edge->size_x, img->size_x);
+  //   ck_assert_uint_eq(img_edge->size_y, img->size_y);
+  //   for (long j = 0; j < img->size_x * img->size_y; j++)
+  //   {
+  //     ck_assert_uint_eq(img_edge->px[j].red, img->px[j].red);
+  //     ck_assert_uint_eq(img_edge->px[j].green, img->px[j].green);
+  //     ck_assert_uint_eq(img_edge->px[j].blue, img->px[j].blue);
+  //     ck_assert_uint_eq(img_dup.px[j].alpha, img->px[j].alpha);
+  //   }
+  //   free(img_dup.px);
+  //   free(img_edge->px);
+  //   free(img->px);
+  //   free(img_edge);
+  //   free(img);
+  // }
 }
 END_TEST
 
@@ -564,6 +607,7 @@ END_TEST
  * The alpha channel needs to be intact in both cases */
 START_TEST(negative_functionality)
 {
+  // clock_t begin = clock();
   /* TODO: Implement */
   srand(time(NULL) ^ getpid());
 
@@ -580,6 +624,10 @@ START_TEST(negative_functionality)
     ck_assert_uint_eq(img.px[i].alpha, 128);
   }
 
+  // clock_t middle = clock();
+  // double time_spent_middle = (double)(middle - begin) / CLOCKS_PER_SEC;
+  // printf("negative_middle: %lf\n", time_spent_middle);
+
   filter_negative(&img, NULL);
 
   for (int i = 0; i < img.size_y * img.size_x; i++)
@@ -591,6 +639,10 @@ START_TEST(negative_functionality)
   }
   /* Not strictly necessary unless using CK_FORK=no */
   free(img.px);
+
+  // clock_t end = clock();
+  // double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  // printf("negative: %lf\n", time_spent);
 }
 END_TEST
 
@@ -704,6 +756,8 @@ END_TEST
 START_TEST(blur_radius_edge_cases)
 {
   /* TODO: Implement */
+  srand(time(NULL) ^ getpid());
+
   struct image img = generate_rand_img();
   int radii[5] = {INT_MIN, INT_MAX, 0, img.size_x, img.size_y};
 
@@ -740,7 +794,29 @@ END_TEST
 /* Verify for a random image that the transparency filter works properly */
 START_TEST(transparency_functionality)
 {
+  // clock_t begin = clock();
   /* TODO: Implement */
+  srand(time(NULL) ^ getpid());
+
+  struct image img = generate_rand_img();
+  struct image dup_img = duplicate_img(img);
+  int transparency = 128;
+
+  filter_transparency(&dup_img, &transparency);
+
+  for (int i = 0; i < img.size_x * img.size_y; ++i)
+  {
+    ck_assert_uint_eq(dup_img.px[i].red, img.px[i].red);
+    ck_assert_uint_eq(dup_img.px[i].green, img.px[i].green);
+    ck_assert_uint_eq(dup_img.px[i].blue, img.px[i].blue);
+    ck_assert_uint_eq(dup_img.px[i].alpha, 128);
+  }
+
+  free(dup_img.px);
+  free(img.px);
+  // clock_t end = clock();
+  // double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+  // printf("transparency: %lf\n", time_spent);
 }
 END_TEST
 
@@ -748,6 +824,8 @@ END_TEST
 START_TEST(transparency_edge_case)
 {
   /* TODO: Implement */
+  int transparency = 128;
+  filter_transparency(NULL, &transparency);
 }
 END_TEST
 
@@ -777,6 +855,7 @@ int main()
   /* Tests for functionality */
   tcase_add_test(tc2, grayscale_functionality);
   /* TODO: Add looped test case for grayscale_examples */
+  tcase_add_loop_test(tc2, grayscale_examples, 0, sizeof(grayscale_sources) / sizeof(grayscale_sources[0]));
   tcase_add_test(tc2, negative_functionality);
   tcase_add_test(tc2, blur_functionality);
   tcase_add_test(tc2, transparency_functionality);
