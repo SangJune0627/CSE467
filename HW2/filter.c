@@ -7,13 +7,16 @@
  * color channels for every pixel This value is then written to all the channels
  * to get the grayscale representation of the image
  */
-void filter_grayscale(struct image *img, void *weight_arr) {
+void filter_grayscale(struct image *img, void *weight_arr)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   double *weights = (double *)weight_arr;
 
-  for (unsigned short i = 0; i < img->size_y; i++) {
-    for (unsigned short j = 0; j < img->size_x; j++) {
+  for (unsigned short i = 0; i < img->size_y; i++)
+  {
+    for (unsigned short j = 0; j < img->size_x; j++)
+    {
       double luminosity = 0;
 
       luminosity += weights[0] * image_data[i][j].red;
@@ -38,7 +41,8 @@ void filter_grayscale(struct image *img, void *weight_arr) {
  * corner).
  *
  */
-void filter_blur(struct image *img, void *r) {
+void filter_blur(struct image *img, void *r)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   int radius = *((int *)r);
@@ -46,13 +50,16 @@ void filter_blur(struct image *img, void *r) {
   struct pixel(*new_data)[img->size_x] =
       malloc(sizeof(struct pixel) * img->size_x * img->size_y);
 
-  if (!new_data) {
+  if (!new_data)
+  {
     return;
   }
 
   /* We iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
 
       unsigned red = 0, green = 0, blue = 0, alpha = 0;
 
@@ -69,8 +76,10 @@ void filter_blur(struct image *img, void *r) {
       x_stop = x_stop >= img->size_x ? img->size_x - 1 : x_stop;
 
       /* We iterate over all pixels in the square */
-      for (long y = y_start; y <= y_stop; y++) {
-        for (long x = x_start; x <= x_stop; x++) {
+      for (long y = y_start; y <= y_stop; y++)
+      {
+        for (long x = x_start; x <= x_stop; x++)
+        {
 
           struct pixel current = image_data[y][x];
 
@@ -102,13 +111,16 @@ void filter_blur(struct image *img, void *r) {
 }
 
 /* This filter just negates every color in the image */
-void filter_negative(struct image *img, void *noarg) {
+void filter_negative(struct image *img, void *noarg)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
 
   /* Iterate over all the pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
 
       struct pixel current = image_data[i][j];
       struct pixel neg;
@@ -123,14 +135,17 @@ void filter_negative(struct image *img, void *noarg) {
   }
 }
 
-void filter_transparency(struct image *img, void *transparency) {
+void filter_transparency(struct image *img, void *transparency)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t local_alpha = *((uint8_t *)transparency);
 
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
 
       image_data[i][j].alpha = local_alpha;
     }
@@ -144,14 +159,17 @@ void filter_transparency(struct image *img, void *transparency) {
  * green = average + depth, capped at 255
  * blue = average
  * Alpha is unaffected. */
-void filter_sepia(struct image *img, void *depth_arg) {
+void filter_sepia(struct image *img, void *depth_arg)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t depth = *(uint8_t *)depth_arg;
 
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
       /* TODO: Implement */
     }
   }
@@ -160,14 +178,17 @@ void filter_sepia(struct image *img, void *depth_arg) {
 /* This filter replaces all pixels whose average rgb value is over the
  * threshold with white, otherwise black. Alpha is unaffected.
  */
-void filter_bw(struct image *img, void *threshold_arg) {
+void filter_bw(struct image *img, void *threshold_arg)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t threshold = *(uint8_t *)threshold_arg;
 
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
       /* TODO: Implement */
     }
   }
@@ -193,7 +214,8 @@ void filter_bw(struct image *img, void *threshold_arg) {
  * The net gradient for each channel = sqrt(g_x^2 + g_y^2)
  * For the pixel, the net gradient = sqrt(g_red^2 + g_green^2 + g_blue_2)
  */
-void filter_edge_detect(struct image *img, void *threshold_arg) {
+void filter_edge_detect(struct image *img, void *threshold_arg)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t threshold = *(uint8_t *)threshold_arg;
@@ -201,8 +223,10 @@ void filter_edge_detect(struct image *img, void *threshold_arg) {
   double weights_y[3][3] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
 
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
       /* TODO: Implement */
     }
   }
@@ -210,14 +234,17 @@ void filter_edge_detect(struct image *img, void *threshold_arg) {
 
 /* This filter performs keying, replacing the color specified by the argument
  * by a transparent pixel */
-void filter_keying(struct image *img, void *key_color) {
+void filter_keying(struct image *img, void *key_color)
+{
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   struct pixel key = *(struct pixel *)key_color;
 
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++) {
-    for (long j = 0; j < img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++)
+  {
+    for (long j = 0; j < img->size_x; j++)
+    {
       /* TODO: Implement */
     }
   }
@@ -225,7 +252,8 @@ void filter_keying(struct image *img, void *key_color) {
 
 /* The filter structure comprises the filter function, its arguments and the
  * image we want to process */
-struct filter {
+struct filter
+{
   void (*filter)(struct image *img, void *arg);
   void *arg;
   struct image *img;
@@ -233,7 +261,8 @@ struct filter {
 
 void execute_filter(struct filter *fil) { fil->filter(fil->img, fil->arg); }
 
-int __attribute__((weak)) main(int argc, char *argv[]) {
+int __attribute__((weak)) main(int argc, char *argv[])
+{
   struct filter fil;
   char arg[256];
   char input[255];
@@ -247,7 +276,8 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
   double weights[] = {0.2125, 0.7154, 0.0721};
 
   /* Some filters take no arguments, while others have 1 */
-  if (argc != 4 && argc != 5) {
+  if (argc != 4 && argc != 5)
+  {
     goto error_usage;
   }
 
@@ -265,13 +295,15 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
   command[255] = '\0';
 
   /* If the filter takes an argument, copy it */
-  if (argv[4]) {
+  if (argv[4])
+  {
     strncpy(arg, argv[4], 256);
     arg[255] = '\0';
   }
 
   /* Error when loading a png image */
-  if (load_png(input, &img)) {
+  if (load_png(input, &img))
+  {
     exit(1);
   }
 
@@ -279,65 +311,84 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
   fil.img = img;
 
   /* Decode the filter */
-  if (!strcmp(command, "grayscale")) {
+  if (!strcmp(command, "grayscale"))
+  {
     fil.filter = filter_grayscale;
     fil.arg = weights;
-  } else if (!strcmp(command, "negative")) {
+  }
+  else if (!strcmp(command, "negative"))
+  {
     fil.arg = NULL;
     fil.filter = filter_negative;
-  } else if (!strcmp(command, "blur")) {
+  }
+  else if (!strcmp(command, "blur"))
+  {
     /* Bad filter radius will just be interpretted as 0 - no change to the image
      */
     radius = atoi(arg);
     fil.filter = filter_blur;
     fil.arg = &radius;
-  } else if (!strcmp(command, "alpha")) {
+  }
+  else if (!strcmp(command, "alpha"))
+  {
 
     char *end_ptr;
     alpha = strtol(arg, &end_ptr, 16);
 
-    if (*end_ptr) {
+    if (*end_ptr)
+    {
       goto error_usage;
     }
 
     fil.filter = filter_transparency;
     fil.arg = &alpha;
   }
-  else if (!strcmp(command, "sepia")) {
+  else if (!strcmp(command, "sepia"))
+  {
     char *end_ptr;
     depth = strtol(arg, &end_ptr, 16);
 
-    if (*end_ptr) {
+    if (*end_ptr)
+    {
       goto error_usage;
     }
 
     fil.filter = filter_sepia;
     fil.arg = &depth;
-  } else if (!strcmp(command, "bw")) {
+  }
+  else if (!strcmp(command, "bw"))
+  {
     char *end_ptr;
     threshold = strtol(arg, &end_ptr, 16);
 
-    if (*end_ptr) {
+    if (*end_ptr)
+    {
       goto error_usage;
     }
 
     fil.filter = filter_bw;
     fil.arg = &threshold;
-  } else if (!strcmp(command, "edge")) {
+  }
+  else if (!strcmp(command, "edge"))
+  {
     char *end_ptr;
     threshold = strtol(arg, &end_ptr, 16);
 
-    if (*end_ptr) {
+    if (*end_ptr)
+    {
       goto error_usage;
     }
 
     fil.filter = filter_edge_detect;
     fil.arg = &threshold;
-  } else if (!strcmp(command, "keying")) {
+  }
+  else if (!strcmp(command, "keying"))
+  {
     char *end_ptr;
     key = strtol(arg, &end_ptr, 16);
 
-    if (*end_ptr) {
+    if (*end_ptr)
+    {
       goto error_usage;
     }
 
@@ -350,9 +401,12 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
   }
 
   /* Invalid filter check */
-  if (fil.filter) {
+  if (fil.filter)
+  {
     execute_filter(&fil);
-  } else {
+  }
+  else
+  {
     goto error_filter;
   }
 
