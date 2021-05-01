@@ -171,6 +171,16 @@ void filter_sepia(struct image *img, void *depth_arg)
     for (long j = 0; j < img->size_x; j++)
     {
       /* TODO: Implement */
+      uint8_t avg = (image_data[i][j].red + image_data[i][j].green + image_data[i][j].blue) / 3;
+      if (avg + 2 * depth <= 255)
+        image_data[i][j].red = avg + 2 * depth;
+      else
+        image_data[i][j].red = 255;
+      if (avg + depth <= 255)
+        image_data[i][j].green = avg + depth;
+      else
+        image_data[i][j].green = 255;
+      image_data[i][j].blue = avg;
     }
   }
 }
@@ -190,6 +200,19 @@ void filter_bw(struct image *img, void *threshold_arg)
     for (long j = 0; j < img->size_x; j++)
     {
       /* TODO: Implement */
+      uint8_t agv = (image_data[i][j].red + image_data[i][j].green + image_data[i][j].blue) / 3;
+      if (agv > threshold)
+      {
+        image_data[i][j].red = 255;
+        image_data[i][j].green = 255;
+        image_data[i][j].blue = 255;
+      }
+      else
+      {
+        image_data[i][j].red = 0;
+        image_data[i][j].green = 0;
+        image_data[i][j].blue = 0;
+      }
     }
   }
 }
@@ -214,24 +237,67 @@ void filter_bw(struct image *img, void *threshold_arg)
  * The net gradient for each channel = sqrt(g_x^2 + g_y^2)
  * For the pixel, the net gradient = sqrt(g_red^2 + g_green^2 + g_blue_2)
  */
+#define BOUND(x, min, max) ((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x));
 void filter_edge_detect(struct image *img, void *threshold_arg)
 {
   struct pixel(*image_data)[img->size_x] =
       (struct pixel(*)[img->size_x])img->px;
   uint8_t threshold = *(uint8_t *)threshold_arg;
+
   double weights_x[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
   double weights_y[3][3] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
 
+  struct pixel temp[img->size_y][img->size_x];
   /* Iterate over all pixels */
-  for (long i = 0; i < img->size_y; i++)
+  for (int i = 0; i < img->size_y; i++)
   {
-    for (long j = 0; j < img->size_x; j++)
+    for (int j = 0; j < img->size_x; j++)
     {
       /* TODO: Implement */
+      temp[i][j] = image_data[i][j];
+    }
+  }
+  for (int i = 0; i < img->size_y; i++)
+  {
+    for (int j = 0; j < img->size_x; j++)
+    {
+      double G;
+      double Gx_red = 0, Gy_red = 0, G_red;
+      double Gx_green = 0, Gy_green = 0, G_green;
+      double Gx_blue = 0, Gy_blue = 0, G_blue;
+      for (int k = -1; k < 2; k++)
+      {
+        for (int l = -1; l < 2; l++)
+        {
+          int y_dash = BOUND(i + k, 0, img->size_y - 1);
+          int x_dash = BOUND(j + l, 0, img->size_x - 1);
+          Gx_red += weights_x[k + 1][l + 1] * (double)temp[y_dash][x_dash].red;
+          Gy_red += weights_y[k + 1][l + 1] * (double)temp[y_dash][x_dash].red;
+          Gx_green += weights_x[k + 1][l + 1] * (double)temp[y_dash][x_dash].green;
+          Gy_green += weights_y[k + 1][l + 1] * (double)temp[y_dash][x_dash].green;
+          Gx_blue += weights_x[k + 1][l + 1] * (double)temp[y_dash][x_dash].blue;
+          Gy_blue += weights_y[k + 1][l + 1] * (double)temp[y_dash][x_dash].blue;
+        }
+      }
+      G_red = sqrt(Gx_red * Gx_red + Gy_red * Gy_red);
+      G_green = sqrt(Gx_green * Gx_green + Gy_green * Gy_green);
+      G_blue = sqrt(Gx_blue * Gx_blue + Gy_blue * Gy_blue);
+      G = sqrt(G_red * G_red + G_green * G_green + G_blue * G_blue);
+      if (G > (double)threshold)
+      {
+        image_data[i][j].red = 0;
+        image_data[i][j].green = 0;
+        image_data[i][j].blue = 0;
+      }
+      else
+      {
+        image_data[i][j].red = 255;
+        image_data[i][j].green = 255;
+        image_data[i][j].blue = 255;
+      }
     }
   }
 }
-
 /* This filter performs keying, replacing the color specified by the argument
  * by a transparent pixel */
 void filter_keying(struct image *img, void *key_color)
@@ -246,6 +312,8 @@ void filter_keying(struct image *img, void *key_color)
     for (long j = 0; j < img->size_x; j++)
     {
       /* TODO: Implement */
+      if (image_data[i][j].red == key.red && image_data[i][j].green == key.green && image_data[i][j].blue == key.blue)
+        image_data[i][j].alpha = 0;
     }
   }
 }
