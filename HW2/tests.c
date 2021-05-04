@@ -841,6 +841,7 @@ int main()
   /* Add tests for input limits, and general functionality tests */
 
   /* Tests for limits*/
+  /*
   tcase_add_test(tc1, grayscale_double_limit);
   tcase_add_test(tc1, negative_zero_size);
   tcase_add_test(tc1, blur_radius_edge_cases);
@@ -851,10 +852,11 @@ int main()
   tcase_add_test(tc1, edge_threshold);
   tcase_add_test(tc1, transparency_edge_case);
   tcase_add_test(tc1, keying_limits);
-
+  */
   /* Tests for functionality */
   tcase_add_test(tc2, grayscale_functionality);
   /* TODO: Add looped test case for grayscale_examples */
+  /*
   tcase_add_loop_test(tc2, grayscale_examples, 0, sizeof(grayscale_sources) / sizeof(grayscale_sources[0]));
   tcase_add_test(tc2, negative_functionality);
   tcase_add_test(tc2, blur_functionality);
@@ -865,7 +867,7 @@ int main()
   tcase_add_loop_test(tc2, edge_example_image, 0, sizeof(edge_deserts) / sizeof(edge_deserts[0]));
   tcase_add_test(tc2, edge_checkerboard);
   tcase_add_test(tc2, keying_functionality);
-
+  */
   SRunner *sr = srunner_create(s);
   srunner_run_all(sr, CK_VERBOSE);
 
